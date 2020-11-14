@@ -38,8 +38,35 @@ def start(_bot, update):
     """/start message for bot"""
     message = update.effective_message
     message.reply_text(
-        f"Hey There,\n This is Bot To Notify you about events Happening in [Phantom Userbot Repository](https://github.com/prothinkergang/PhantomUserbot).\n\n **Current Details**\n-Connected Chat - @PhantomChats\nMain Channel - @Phantomot\nSupport Group - @PhantomSupport\n\n[Join this Group](t.me/GitGramChat) to Know How To make a Bot Like me !!)",
+        f"This is the Updates watcher for {PROJECT_NAME}. I am just notify users about what's happen on their Git repositories thru webhooks.\n\nYou need to [self-host](https://waa.ai/GitGram) or see /help to use this bot on your groups.",
         parse_mode="markdown")
+
+
+def help(_bot, update):
+    """/help message for the bot"""
+    message = update.effective_message
+    message.reply_text(
+        f"*Available Commands*\n\n`/connect` - Setup how to connect this chat to receive Git activity notifications.\n`/support` - Get links to get support if you're stuck.\n`/source` - Get the Git repository URL.",
+        parse_mode="markdown"
+    )
+
+
+def support(_bot, update):
+    """Links to Support"""
+    message = update.effective_message
+    message.reply_text(
+        f"*Getting Support*\n\nTo get support in using the bot, join [the GitGram support](https://t.me/GitGramChat).",
+        parse_mode="markdown"
+    )
+
+
+def source(_bot, update):
+    """Link to Source"""
+    message = update.effective_message
+    message.reply_text(
+        f"*Source*:\n[GitGram Repo](https://waa.ai/GitGram).",
+        parse_mode="markdown"
+    )
 
 
 def getSourceCodeLink(_bot, update):
@@ -51,7 +78,14 @@ def getSourceCodeLink(_bot, update):
 
 
 start_handler = CommandHandler("start", start)
+help_handler = CommandHandler("help", help)
+supportCmd = CommandHandler("support", support)
+sourcecode = CommandHandler("source", source)
+
 dispatcher.add_handler(start_handler)
+dispatcher.add_handler(help_handler)
+dispatcher.add_handler(supportCmd)
+dispatcher.add_handler(sourcecode)
 updater.start_polling()
 
 TG_BOT_API = f'https://api.telegram.org/bot{BOT_TOKEN}/'
@@ -126,7 +160,7 @@ def git_api(groupid):
                 commit_msg = escape(commit['message']).split("\n")[0]
             else:
                 commit_msg = escape(commit['message'])
-            commits_text += f"{commit_msg}\n<a href='{commit['url']}'>{commit['id'][:7]}</a> - {commit['author']['name']}\n\n"
+            commits_text += f"{commit_msg}\n<a href='{commit['url']}'>{commit['id'][:7]}</a> - {commit['author']['name']} {escape('<')}{commit['author']['email']}{escape('>')}\n\n"
             if len(commits_text) > 1000:
                 text = f"""✨ <b>{escape(data['repository']['name'])}</b> - New {len(data['commits'])} commits ({escape(data['ref'].split('/')[-1])})
 {commits_text}
@@ -147,7 +181,6 @@ def git_api(groupid):
         if data.get('comment'):
             text = f"""💬 New comment: <b>{escape(data['repository']['name'])}</b>
 {escape(data['comment']['body'])}
-
 <a href='{data['comment']['html_url']}'>Issue #{data['issue']['number']}</a>
 """
             response = post_tg(groupid, text, "html")
@@ -155,7 +188,6 @@ def git_api(groupid):
         text = f"""🚨 New {data['action']} issue for <b>{escape(data['repository']['name'])}</b>
 <b>{escape(data['issue']['title'])}</b>
 {escape(data['issue']['body'])}
-
 <a href='{data['issue']['html_url']}'>issue #{data['issue']['number']}</a>
 """
         response = post_tg(groupid, text, "html")
@@ -165,7 +197,6 @@ def git_api(groupid):
         if data.get('comment'):
             text = f"""❗ There is a new pull request for <b>{escape(data['repository']['name'])}</b> ({data['pull_request']['state']})
 {escape(data['comment']['body'])}
-
 <a href='{data['comment']['html_url']}'>Pull request #{data['issue']['number']}</a>
 """
             response = post_tg(groupid, text, "html")
@@ -173,7 +204,6 @@ def git_api(groupid):
         text = f"""❗  New {data['action']} pull request for <b>{escape(data['repository']['name'])}</b>
 <b>{escape(data['pull_request']['title'])}</b> ({data['pull_request']['state']})
 {escape(data['pull_request']['body'])}
-
 <a href='{data['pull_request']['html_url']}'>Pull request #{data['pull_request']['number']}</a>
 """
         response = post_tg(groupid, text, "html")
