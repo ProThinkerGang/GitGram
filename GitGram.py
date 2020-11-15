@@ -6,7 +6,7 @@ from html import escape
 from requests import get, post
 from os import environ
 import config
-
+from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CommandHandler, Updater
 
 server = Flask(__name__)
@@ -39,7 +39,10 @@ def start(_bot, update):
     message = update.effective_message
     message.reply_text(
         f"Hello, I will Notify You about Events Happening in [Phantom Userbot REPO.](https://github.com/prothinkergang/phantomuserbot).\n\nConnected Chat - @PhantomChats\nUserbot Channel - @Phantomot\n\nJoin @GitgramChat to Know How to deploy me !",
-        parse_mode="markdown")
+        parse_mode="markdown",
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text="Phantom Userbot",url="https://github.com/prothinkergang/phantomuserbot")]]))
 
 start_handler = CommandHandler("start", start)
 
@@ -120,14 +123,14 @@ def git_api(groupid):
                 commit_msg = escape(commit['message'])
             commits_text += f"{commit_msg}\n<a href='{commit['url']}'>{commit['id'][:7]}</a> - {commit['author']['name']}\n\n"
             if len(commits_text) > 1000:
-                text = f"""<b>{escape(data['repository']['name'])}</b> - New {len(data['commits'])} commits ({escape(data['ref'].split('/')[-1])})
+                text = f""{len(data['commits'])} New commit in <b>{escape(data['repository']['name'])}</b> ({escape(data['ref'].split('/')[-1])})
 {commits_text}
 """
                 response = post_tg(groupid, text, "html")
                 commits_text = ""
         if not commits_text:
             return jsonify({"ok": True, "text": "Commits text is none"})
-        text = f"""<b>{escape(data['repository']['name'])}</b> - New {len(data['commits'])} commits ({escape(data['ref'].split('/')[-1])})
+        text = f"""{len(data['commits'])} New commit in <b>{escape(data['repository']['name'])}</b> ({escape(data['ref'].split('/')[-1])})
 {commits_text}
 """
         if len(data['commits']) > 10:
